@@ -1,6 +1,6 @@
 const knight = require("./knight");
 const board = new Array(8).fill(0).map(() => new Array(8).fill(0));
-let triedOptions = [];
+
 
 // determine adjacency list
 let moveList = new Array(8).fill(0).map(() => new Array(8));
@@ -27,44 +27,57 @@ for (let x = 0; x < board.length; x++){
             moves.push([x + 1, y - 2]);
         }
         if (x - 1 >= 0 && y + 2 < board[x].length){
-            moves.push([x + 1, y + 2]);
+            moves.push([x - 1, y + 2]);
         }
         if (x - 1 >= 0 && y - 2 >= 0){
-            moves.push([x + 1, y - 2]);
+            moves.push([x - 1, y - 2]);
         }
         moveList[x][y] = moves;  
     }
 }
 
-    const equals = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-    function findShortestPath(startPos, endPos){
-        let path = [startPos];
-        let queue = [startPos];      
+function knightsMove(root, endPos){
+    let triedOptions = [root];
+    let queue = []; 
+    
+    function equals (a, b){
+        return JSON.stringify(a) === JSON.stringify(b);
+    }
+    function findShortestPath(root, endPos){
+        let path = [];
 
-        if (queue.length > 0){
-            queue.shift();
-            if (equals (startPos, endPos)){
-                console.log('end');
+            if (equals(root, endPos)){
+                path.push(root);
                 return path;
             }
-
-            let possibleMoves = moveList[startPos[0]][startPos[1]];
+            let possibleMoves = moveList[root[0]][root[1]];
+            if ((JSON.stringify(possibleMoves).includes(JSON.stringify(endPos)))){
+                path.push(root);
+                path.push(endPos);
+                return path;
+            }
             for (const move of possibleMoves){
-                if (equals(move, endPos)){
-                    path.push(move);
-                    return path;
-                } 
-                if (!queue.includes(move) && !triedOptions.includes(move)){
-                   
+                if (!(JSON.stringify(queue).includes(JSON.stringify(move))) && !(JSON.stringify(triedOptions).includes(JSON.stringify(move)))){
                     queue.push(move);
                     triedOptions.push(move);
                 }  
             }
+            if(queue.length > 0){
+                let nextNode = queue.shift();
+                path = findShortestPath(nextNode, endPos);
+               // if the nextNode root is child of root unshift 
+               if(possibleMoves.includes(path[0])){ 
+                    path.unshift((root));
+               }
 
-            path = path.concat(findShortestPath(queue.shift(), endPos));
+            }
             return path;
-        }
+    
     }
+    return findShortestPath(root, endPos);
+}
 
-console.log(findShortestPath([0,0], [5,2]));
-const piece = knight([0,1]);
+console.log(knightsMove([0,0], [1,2]));
+console.log(knightsMove([0,0], [3,3]));
+console.log(knightsMove([3,3], [0,0]));
+console.log(knightsMove([5,7], [0,3]));
